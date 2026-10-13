@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Prime Form — every colour was a thing first</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+<style>
+:root{
+  --ink:#0d0d0f; --panel:#141417; --fg:#f2efe8; --fg2:#a9a49a; --fg3:#6e6a63;
+  --line:rgba(242,239,232,.17);
+  --serif:'Newsreader',Georgia,serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--ink);color:var(--fg);
+  font-family:var(--sans);overscroll-behavior:none;-webkit-font-smoothing:antialiased}
+
+/* ---------------- gate ---------------- */
+#gate{position:fixed;inset:0;z-index:40;background:var(--ink);display:flex;
+  flex-direction:column;justify-content:center;gap:1.05rem;
+  padding:2rem 1.5rem calc(2rem + env(safe-area-inset-bottom))}
+#gate h1{font-family:var(--serif);font-weight:400;font-size:2.5rem;line-height:1.08;margin:0}
+#gate h1 em{font-style:italic;color:var(--fg2)}
+#gate p{margin:0;color:var(--fg2);font-size:.96rem;line-height:1.56;max-width:33rem}
+.eyebrow{font-family:var(--mono);font-size:.66rem;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--fg3)}
+.btn{font:inherit;font-size:.95rem;font-weight:500;cursor:pointer;
+  border:1px solid var(--fg);background:var(--fg);color:var(--ink);
+  border-radius:2px;padding:.85rem 1.4rem;align-self:flex-start}
+.btn.ghost{background:none;color:var(--fg);border-color:var(--line)}
+.btn:disabled{opacity:.45}
+#err{color:#e8927c;font-size:.84rem;font-family:var(--mono);line-height:1.5}
+
+/* ---------------- camera ---------------- */
+#cam{position:fixed;inset:0;z-index:1}
+#video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#000}
+#ret{position:absolute;left:50%;top:50%;width:76px;height:76px;margin:-38px 0 0 -38px;
+  border:1px solid rgba(242,239,232,.9);border-radius:50%;
+  box-shadow:0 0 0 1px rgba(0,0,0,.4), inset 0 0 0 1px rgba(0,0,0,.3)}
+#ret::before,#ret::after{content:"";position:absolute;left:50%;width:1px;height:10px;
+  background:rgba(242,239,232,.9)}
+#ret::before{top:-13px} #ret::after{bottom:-13px}
+#camtop{position:absolute;top:0;left:0;right:0;padding:1rem 1.1rem;
+  padding-top:calc(.9rem + env(safe-area-inset-top));
+  font-family:var(--mono);font-size:.68rem;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--fg2);text-shadow:0 1px 8px rgba(0,0,0,.9);line-height:1.8}
+#camtop b{color:var(--fg);font-weight:500}
+#shoot{position:absolute;left:50%;transform:translateX(-50%);
+  bottom:calc(1.6rem + env(safe-area-inset-bottom));
+  width:78px;height:78px;border-radius:50%;cursor:pointer;
+  border:1px solid rgba(242,239,232,.65);background:rgba(13,13,15,.3);backdrop-filter:blur(8px)}
+#shoot::after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--fg)}
+#shoot:active::after{inset:12px}
+
+/* ---------------- result ---------------- */
+#res{position:fixed;inset:0;z-index:20;background:var(--ink);
+  display:flex;flex-direction:column;transform:translateY(100%);
+  transition:transform .42s cubic-bezier(.19,1,.22,1)}
+#res.up{transform:translateY(0)}
+#resbar{display:flex;align-items:center;gap:.8rem;padding:.75rem 1rem;
+  padding-top:calc(.7rem + env(safe-area-inset-top));border-bottom:1px solid var(--line)}
+#back{font:inherit;font-family:var(--mono);font-size:.68rem;letter-spacing:.11em;
+  text-transform:uppercase;cursor:pointer;color:var(--fg);background:none;
+  border:1px solid var(--line);border-radius:2px;padding:.5rem .8rem}
+#match{flex:1;display:flex;align-items:center;gap:.45rem;justify-content:flex-end;
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--fg3)}
+.sw{width:19px;height:19px;border-radius:2px;border:1px solid rgba(255,255,255,.22)}
+
+model-viewer{width:100%;height:40vh;flex:0 0 auto;background:var(--panel);
+  --poster-color:transparent}
+#arBtn{position:absolute;bottom:.9rem;left:50%;transform:translateX(-50%);
+  font:inherit;font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;
+  text-transform:uppercase;cursor:pointer;white-space:nowrap;
+  background:var(--fg);color:var(--ink);border:none;border-radius:2px;padding:.75rem 1.4rem}
+#noar{position:absolute;bottom:.9rem;left:50%;transform:translateX(-50%);
+  font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--fg3);white-space:nowrap;border:1px solid var(--line);border-radius:2px;
+  padding:.6rem 1rem;display:none}
+
+#info{flex:1 1 auto;overflow-y:auto;padding:1.15rem 1.15rem
+  calc(2rem + env(safe-area-inset-bottom))}
+#pig{font-family:var(--serif);font-weight:400;font-size:1.85rem;line-height:1.1;margin:0}
+#from{font-family:var(--mono);font-size:.67rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--fg3);margin:.45rem 0 0;line-height:1.75}
+#story{font-family:var(--serif);font-size:1.02rem;line-height:1.62;color:var(--fg2);margin:1rem 0 0}
+#haz{margin:1rem 0 0;font-family:var(--mono);font-size:.67rem;letter-spacing:.08em;
+  text-transform:uppercase;color:#e8927c;border:1px solid rgba(232,146,124,.32);
+  border-radius:2px;padding:.5rem .65rem;display:none}
+#haz.on{display:block}
+#dE{margin-top:1.2rem;padding-top:.85rem;border-top:1px solid var(--line);
+  font-family:var(--mono);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--fg3);line-height:1.9}
+</style>
+</head>
+<body>
+
+<div id="cam">
+  <video id="video" playsinline muted autoplay></video>
+  <div id="camtop">
+    <div>Prime form / colour sampler</div>
+    <div><b id="n">0</b> sampled</div>
+  </div>
+  <div id="ret"></div>
+  <button id="shoot" aria-label="Sample the colour at the centre"></button>
+</div>
+
+<div id="res">
+  <div id="resbar">
+    <button id="back">← Sample again</button>
+    <div id="match">
+      <span class="sw" id="swA"></span> sampled
+      <span style="opacity:.45">→</span>
+      <span class="sw" id="swB"></span> pigment
+    </div>
+  </div>
+
+  <model-viewer id="mv"
+    alt="Mineral specimen"
+    camera-controls touch-action="pan-y"
+    auto-rotate auto-rotate-delay="1800" rotation-per-second="20deg"
+    shadow-intensity="1.1" shadow-softness="0.75"
+    exposure="1.05" environment-image="neutral"
+    ar ar-modes="webxr scene-viewer quick-look"
+    ar-scale="fixed" ar-placement="floor">
+    <button slot="ar-button" id="arBtn">Place it in your room</button>
+    <div id="noar">Open on a phone to place it in your room</div>
+  </model-viewer>
+
+  <div id="info">
+    <h2 id="pig">—</h2>
+    <div id="from">—</div>
+    <p id="story"></p>
+    <div id="haz"></div>
+    <div id="dE">—</div>
+  </div>
+</div>
+
+<div id="gate">
+  <div class="eyebrow">Augmented reality · pigment archaeology</div>
+  <h1>Prime Form<br><em>every colour was a thing first</em></h1>
+  <p>Point the camera at anything. The colour is read off the surface, matched to the
+     historical pigment it most resembles, and the raw material that pigment was ground
+     from appears — at real specimen scale, on your floor.</p>
+  <p>A blue mug becomes a lump of Afghan lapis. A terracotta pot becomes the ochre that
+     has been dug for a hundred thousand years.</p>
+  <button class="btn" id="start">Allow camera &amp; begin</button>
+  <div id="err"></div>
+  <div class="eyebrow" style="margin-top:.3rem">Phone recommended · requires HTTPS</div>
+</div>
+
+<script>
+/* ============================================================
+   the reference set — pigments that have a specimen model
+   ============================================================ */
+const PIG = [
+ { id:"lapis-lazuli", hex:"#2B4C9B", pigment:"Ultramarine", specimen:"Lapis lazuli",
+   size:"10.5 cm", period:"6th – 19th century",
+   origin:"Sar-e-Sang, Badakhshan, Afghanistan",
+   story:"Ground from lapis mined in a single Afghan valley and carried overland to Europe, where it cost more by weight than gold. Painting contracts specified it by the ounce and named who would pay. The gold flecks are pyrite — their presence in a finished painting is how conservators tell natural ultramarine from the synthetic version that collapsed its value in 1826.",
+   hazard:null },
+
+ { id:"egyptian-blue", hex:"#2A6FA8", pigment:"Egyptian blue", specimen:"Fired frit",
+   size:"9 cm", period:"c. 3200 BCE – 4th century CE",
+   origin:"Calcium copper silicate, kiln-fired",
+   story:"The first synthetic pigment. Egyptian workshops fused sand, lime and copper at around 850°C to make a blue nature would not supply cheaply. The recipe was lost with the Roman empire and reconstructed only in the nineteenth century. Under infrared it luminesces strongly, which is how conservators now find traces invisible to the eye.",
+   hazard:null },
+
+ { id:"azurite", hex:"#3A6E99", pigment:"Azurite", specimen:"Azurite",
+   size:"10 cm", period:"Antiquity – 17th century",
+   origin:"Copper carbonate, oxidised ore",
+   story:"The affordable blue before synthetic ultramarine — northern European painters used it where Italians could afford lapis. In damp conditions it slowly converts to malachite, which is why some skies in old altarpieces have quietly turned green over four centuries.",
+   hazard:null },
+
+ { id:"malachite", hex:"#3C8A62", pigment:"Malachite green", specimen:"Malachite",
+   size:"12 cm", period:"c. 3000 BCE – 18th century",
+   origin:"Copper carbonate, oxidised ore",
+   story:"The green that forms where copper weathers. Grind it fine and the colour drains to a pale wash, so the deep green must be left coarse — which makes it gritty and hard to lay down. Egyptian green eye paint is powdered malachite. The bubbled surface is botryoidal growth, formed as mineral-bearing water seeped through rock.",
+   hazard:null },
+
+ { id:"cinnabar", hex:"#C8342A", pigment:"Vermilion", specimen:"Cinnabar",
+   size:"9.5 cm", period:"Antiquity – 20th century",
+   origin:"Mercury sulfide; chiefly Almadén, Spain",
+   story:"Mined at Almadén by convict and enslaved labour, because mercury vapour disabled anyone who worked the seam for long. Chinese alchemists learned to synthesise it from mercury and sulfur centuries before Europe managed it. In some paintings it has darkened to purple-black wherever light reached the surface.",
+   hazard:"Mercury — cumulative toxin" },
+
+ { id:"madder-root", hex:"#B03A4A", pigment:"Madder lake", specimen:"Madder root",
+   size:"14 cm", period:"c. 1500 BCE – present",
+   origin:"Rubia tinctorum, cultivated",
+   story:"The root is dug after three years, dried and ground, and the dye precipitated onto a transparent base to make a lake. It gives the red of British army coats and of Turkey red cloth — a process so laborious it ran for weeks and involved rancid oil and sheep dung.",
+   hazard:null },
+
+ { id:"orpiment", hex:"#E0B93C", pigment:"King's yellow", specimen:"Orpiment",
+   size:"10 cm", period:"Antiquity – 19th century",
+   origin:"Arsenic sulfide, volcanic deposits",
+   story:"A gold-yellow painters wanted badly and handled carefully. Cennini warned in the fourteenth century to beware of soiling your mouth with it. It also blackens on contact with lead and copper pigments, so it could not share a palette with the whites and greens of its own period — poisonous to its user and to its neighbours.",
+   hazard:"Arsenic — acutely toxic" },
+
+ { id:"red-ochre", hex:"#A8432A", pigment:"Red ochre", specimen:"Ochre earth",
+   size:"12 cm", period:"c. 100,000 BCE – present",
+   origin:"Iron oxide in clay, worldwide",
+   story:"The oldest pigment we can date. A workshop at Blombos Cave in South Africa held abalone shells still containing ground ochre mixed with fat, prepared roughly a hundred thousand years ago and never used. It is rust in clay, dug and ground, and it has not once gone out of use since.",
+   hazard:null },
+
+ { id:"umber-earth", hex:"#6B4226", pigment:"Burnt umber", specimen:"Umber earth",
+   size:"12.5 cm", period:"Antiquity – present",
+   origin:"Manganese-rich earth, Umbria",
+   story:"Umber carries manganese as well as iron, which makes it dry faster in oil than any other earth — fast enough that painters use it to push along a sluggish passage. Roasting drives off water and warms it from greenish-brown to chocolate.",
+   hazard:null },
+
+ { id:"murex-shell", hex:"#6B2144", pigment:"Tyrian purple", specimen:"Murex shell",
+   size:"13 cm", period:"c. 1570 BCE – 1453 CE",
+   origin:"Hypobranchial gland, Murex sea snail",
+   story:"One gland per snail, thousands of snails for a few grams, extracted in vats whose stench kept the dyeworks outside the city walls. Roman law restricted it to the emperor. When Constantinople fell in 1453 the industry stopped and the recipe went with it; it was not reproduced until the twentieth century.",
+   hazard:null },
+
+ { id:"charcoal", hex:"#1A1715", pigment:"Carbon black", specimen:"Charcoal",
+   size:"13 cm", period:"Prehistory – present",
+   origin:"Charred wood, bone, soot",
+   story:"Charcoal from the fire. The Lascaux and Chauvet animals are drawn with it. Later refinements were named for the corpse used — bone black from charred bones, ivory black from tusks, vine black from burnt grape stems. The colour is elemental carbon, which is why it has never faded.",
+   hazard:null },
+
+ { id:"cerussite", hex:"#E8E4DA", pigment:"Lead white", specimen:"Cerussite",
+   size:"9.5 cm", period:"c. 400 BCE – 20th century",
+   origin:"Lead carbonate; also made over vinegar and dung",
+   story:"The only good white for two thousand years of European painting, made by stacking lead coils in vinegar pots buried in fermenting manure. Also sold as face powder — Venetian ceruse — which ate the skin it was applied to, so more was needed. The painters, the makers and the wearers were all poisoned by it.",
+   hazard:"Lead — cumulative toxin" }
+];
+
+/* ============================================================
+   colour science
+   ============================================================ */
+const s2l = c => c <= .04045 ? c/12.92 : Math.pow((c+.055)/1.055, 2.4);
+const l2s = c => c <= .0031308 ? c*12.92 : 1.055*Math.pow(c,1/2.4)-.055;
+
+function rgb2lab(r,g,b){
+  const R=s2l(r/255), G=s2l(g/255), B=s2l(b/255);
+  let X=(R*.4124564+G*.3575761+B*.1804375)/.95047;
+  let Y= R*.2126729+G*.7151522+B*.0721750;
+  let Z=(R*.0193339+G*.1191920+B*.9503041)/1.08883;
+  const f=t=>t>.008856?Math.cbrt(t):(7.787*t+16/116);
+  const fx=f(X),fy=f(Y),fz=f(Z);
+  return [116*fy-16, 500*(fx-fy), 200*(fy-fz)];
+}
+
+function dE00(l1,l2){
+  const [L1,a1,b1]=l1,[L2,a2,b2]=l2, rad=Math.PI/180, deg=180/Math.PI;
+  const C1=Math.hypot(a1,b1), C2=Math.hypot(a2,b2), Cb=(C1+C2)/2;
+  const G=.5*(1-Math.sqrt(Math.pow(Cb,7)/(Math.pow(Cb,7)+Math.pow(25,7))));
+  const ap1=(1+G)*a1, ap2=(1+G)*a2;
+  const Cp1=Math.hypot(ap1,b1), Cp2=Math.hypot(ap2,b2);
+  let hp1=Math.atan2(b1,ap1)*deg; if(hp1<0)hp1+=360;
+  let hp2=Math.atan2(b2,ap2)*deg; if(hp2<0)hp2+=360;
+  const dL=L2-L1, dC=Cp2-Cp1;
+  let dhp=0;
+  if(Cp1*Cp2!==0){ dhp=hp2-hp1; if(dhp>180)dhp-=360; else if(dhp<-180)dhp+=360; }
+  const dH=2*Math.sqrt(Cp1*Cp2)*Math.sin(dhp/2*rad);
+  const Lb=(L1+L2)/2, Cpb=(Cp1+Cp2)/2;
+  let hpb;
+  if(Cp1*Cp2===0) hpb=hp1+hp2;
+  else { hpb=(hp1+hp2)/2; if(Math.abs(hp1-hp2)>180) hpb += (hp1+hp2<360)?180:-180; }
+  const T=1-.17*Math.cos((hpb-30)*rad)+.24*Math.cos(2*hpb*rad)
+           +.32*Math.cos((3*hpb+6)*rad)-.20*Math.cos((4*hpb-63)*rad);
+  const dTh=30*Math.exp(-Math.pow((hpb-275)/25,2));
+  const Rc=2*Math.sqrt(Math.pow(Cpb,7)/(Math.pow(Cpb,7)+Math.pow(25,7)));
+  const Sl=1+(.015*Math.pow(Lb-50,2))/Math.sqrt(20+Math.pow(Lb-50,2));
+  const Sc=1+.045*Cpb, Sh=1+.015*Cpb*T, Rt=-Math.sin(2*dTh*rad)*Rc;
+  return Math.sqrt((dL/Sl)**2+(dC/Sc)**2+(dH/Sh)**2+Rt*(dC/Sc)*(dH/Sh));
+}
+
+const h2r = h => [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
+const r2h = (r,g,b) => '#'+[r,g,b].map(v=>Math.round(v).toString(16).padStart(2,'0')).join('').toUpperCase();
+PIG.forEach(p => p.lab = rgb2lab(...h2r(p.hex)));
+
+function nearest(r,g,b){
+  const lab = rgb2lab(r,g,b);
+  let best=PIG[0], bd=Infinity;
+  for(const p of PIG){ const d=dE00(lab,p.lab); if(d<bd){bd=d;best=p;} }
+  return {p:best, d:bd};
+}
+
+/* ============================================================
+   app
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const video = $('video'), mv = $('mv');
+let count = 0;
+
+async function startCamera(){
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video:{ facingMode:{ideal:'environment'}, width:{ideal:1920}, height:{ideal:1080} },
+    audio:false });
+  video.srcObject = stream;
+  await video.play();
+}
+
+const sc = document.createElement('canvas');
+const sx = sc.getContext('2d', { willReadFrequently:true });
+
+function sampleCentre(){
+  const vw=video.videoWidth, vh=video.videoHeight;
+  if(!vw||!vh) return null;
+  const scale = Math.max(innerWidth/vw, innerHeight/vh);
+  const offX = (vw*scale - innerWidth)/2, offY = (vh*scale - innerHeight)/2;
+  const cx = (innerWidth/2 + offX)/scale, cy = (innerHeight/2 + offY)/scale;
+  const rad = Math.max(8, Math.round(30/scale));
+  const size = rad*2;
+  sc.width=size; sc.height=size;
+  sx.drawImage(video, cx-rad, cy-rad, size, size, 0, 0, size, size);
+  const d = sx.getImageData(0,0,size,size).data;
+
+  const vals=[];
+  for(let y=0;y<size;y++) for(let x=0;x<size;x++){
+    const dx=x-rad+.5, dy=y-rad+.5;
+    if(dx*dx+dy*dy > rad*rad) continue;
+    const i=(y*size+x)*4;
+    vals.push([d[i],d[i+1],d[i+2]]);
+  }
+  if(!vals.length) return null;
+  vals.sort((a,b)=>(a[0]*.299+a[1]*.587+a[2]*.114)-(b[0]*.299+b[1]*.587+b[2]*.114));
+  const keep = vals.slice(Math.floor(vals.length*.1), Math.ceil(vals.length*.9));
+  let R=0,G=0,B=0;
+  for(const v of keep){ R+=s2l(v[0]/255); G+=s2l(v[1]/255); B+=s2l(v[2]/255); }
+  const n=keep.length;
+  return [R,G,B].map(c => Math.round(Math.min(1,Math.max(0,l2s(c/n)))*255));
+}
+
+function show(){
+  const rgb = sampleCentre();
+  if(!rgb) return;
+  const [r,g,b] = rgb;
+  const hex = r2h(r,g,b);
+  const {p,d} = nearest(r,g,b);
+
+  mv.src = 'models/' + p.id + '.glb';
+  mv.setAttribute('ios-src', 'models/' + p.id + '.usdz');
+  mv.setAttribute('alt', p.specimen + ' specimen');
+
+  $('swA').style.background = hex;
+  $('swB').style.background = p.hex;
+  $('pig').textContent = p.pigment;
+  $('from').innerHTML = p.specimen + ' &nbsp;·&nbsp; ' + p.size + '<br>'
+                      + p.period + '<br>' + p.origin;
+  $('story').textContent = p.story;
+  const h=$('haz');
+  if(p.hazard){ h.textContent = '⚠ ' + p.hazard; h.classList.add('on'); }
+  else h.classList.remove('on');
+
+  const q = d<10 ? 'close match' : d<22 ? 'loose match' : 'nearest in the set, not a match';
+  $('dE').innerHTML = 'sampled ' + hex + ' &nbsp;·&nbsp; pigment ' + p.hex
+                    + '<br>ΔE ' + d.toFixed(1) + ' — ' + q;
+
+  count++; $('n').textContent = count;
+  $('res').classList.add('up');
+}
+
+$('start').addEventListener('click', async () => {
+  const b=$('start'); b.disabled=true; b.textContent='Starting…';
+  try{ await startCamera(); }
+  catch(e){
+    $('err').textContent = 'Camera refused: ' + e.name + '. Needs HTTPS and permission.';
+    b.disabled=false; b.textContent='Retry'; return;
+  }
+  $('gate').style.display='none';
+});
+
+$('shoot').addEventListener('click', show);
+$('back').addEventListener('click', () => $('res').classList.remove('up'));
+mv.addEventListener('load', () => {
+  $('noar').style.display = mv.canActivateAR ? 'none' : 'block';
+});
+</script>
+</body>
+</html>
